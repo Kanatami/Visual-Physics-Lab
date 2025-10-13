@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Virtual Physics Lab — 投射運動</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="container header">
+    <h1>Virtual Physics Lab — 投射運動</h1>
+    <p class="subtitle">HTML5 Canvas で投射運動を可視化するミニ実験</p>
+  </header>
+
+  <main class="container grid">
+    <!-- コントロール -->
+    <section class="card controls" aria-labelledby="controls-title">
+      <h2 id="controls-title">パラメータ</h2>
+
+      <div class="field">
+        <label for="v0">初速度 v₀ (m/s)</label>
+        <input id="v0" type="number" step="1" min="1" value="25" />
+      </div>
+
+      <div class="field">
+        <label for="angle">射出角 θ (°)</label>
+        <input id="angle" type="range" min="0" max="90" value="45" />
+        <output id="angleOut" for="angle">45°</output>
+      </div>
+
+      <div class="field two">
+        <div>
+          <label for="h0">初期高さ h₀ (m)</label>
+          <input id="h0" type="number" step="0.1" min="0" value="0" />
+        </div>
+        <div>
+          <label for="g">重力加速度 g (m/s²)</label>
+          <input id="g" type="number" step="0.01" min="0.1" value="9.81" />
+        </div>
+      </div>
+
+      <div class="field two">
+        <div>
+          <label for="scale">スケール (px/m)</label>
+          <input id="scale" type="number" step="1" min="5" value="10" />
+        </div>
+        <div class="switch">
+          <input id="trace" type="checkbox" />
+          <label for="trace">軌跡を残す</label>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="startBtn" class="btn primary">開始</button>
+        <button id="pauseBtn" class="btn">一時停止</button>
+        <button id="resetBtn" class="btn danger">リセット</button>
+        <button id="demoBtn" class="btn ghost">デモ</button>
+      </div>
+
+      <details class="note">
+        <summary>数式と前提</summary>
+        <p>
+          x(t)=v₀cosθ·t， y(t)=h₀+v₀sinθ·t−(1/2)g t²。<br/>
+          到達時間 T は y(T)=0 の正の解：
+          T = [v₀sinθ + √((v₀sinθ)² + 2gh₀)]/g。
+        </p>
+      </details>
+    </section>
+
+    <!-- キャンバス -->
+    <section class="card canvas-wrap" aria-labelledby="canvas-title">
+      <h2 id="canvas-title" class="visually-hidden">シミュレーション</h2>
+      <canvas id="simCanvas"></canvas>
+    </section>
+
+    <!-- メトリクス -->
+    <section class="card metrics" aria-labelledby="metrics-title">
+      <h2 id="metrics-title">結果</h2>
+      <ul class="metrics-list" aria-live="polite">
+        <li><span>飛行時間 T</span><strong id="tOut">— s</strong></li>
+        <li><span>到達最高点 H<sub>max</sub></span><strong id="hOut">— m</strong></li>
+        <li><span>水平到達距離 R</span><strong id="rOut">— m</strong></li>
+        <li><span>現在時刻 t</span><strong id="timeOut">0.00 s</strong></li>
+      </ul>
+      <p class="hint">※ 値は理想条件（空気抵抗なし）での近似。</p>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <small>© Virtual Physics Lab — Projectile Motion</small>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
