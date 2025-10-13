@@ -72,9 +72,9 @@
     range = vx0 * T;
 
     // 出力
-    tOut.textContent = `${T.toFixed(2)} s`;
-    hOut.textContent = `${hMax.toFixed(2)} m`;
-    rOut.textContent = `${range.toFixed(2)} m`;
+    // tOut.textContent = `${T.toFixed(2)} s`;
+    // hOut.textContent = `${hMax.toFixed(2)} m`;
+    // rOut.textContent = `${range.toFixed(2)} m`;
   }
 
   // ワールド→キャンバス座標変換（原点は左下）
@@ -157,11 +157,15 @@
 
     const xm = vx0 * t;
     const ym = Number(h0El.value) + vy0 * t - 0.5 * g * t * t;
+    const vy = vy0 - g * t;
 
     // 画面外に出過ぎた場合は停止
     if (ym <= 0 || t >= T) {
       running = false;
-      timeOut.textContent = `${T.toFixed(2)} s`;
+      timeOut.textContent = `${T.toFixed(2)} s`;//終了時に確定
+      tOut.textContent = `${T.toFixed(2)} s`;
+      hOut.textContent = `${hMax.toFixed(2)} m`;
+      rOut.textContent = `${range.toFixed(2)} m`;
       drawFrame(range, 0, g, true);
       return;
     }
@@ -170,6 +174,10 @@
 
     drawFrame(xm, ym, g, true);
     timeOut.textContent = `${t.toFixed(2)} s`;
+    //現在位置を表示
+    hOut.textContent = `${Math.max(0, ym).toFixed(2)} m`;
+    rOut.textContent = `${Math.max(0, xm).toFixed(2)} m`;
+
     rafId = requestAnimationFrame(step);
   }
 
@@ -191,6 +199,12 @@
       recalc();
       t = 0;
       tracePts.length = 0;
+
+      tOut.textContent = "- s";//終了時に確定
+      hOut.textContent = "0.00 m";
+      rOut.textContent = "0.00 m";
+
+
       running = true;
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(step);
@@ -207,6 +221,12 @@
     t = 0;
     timeOut.textContent = "0.00 s";
     tracePts.length = 0;
+    tOut.textContent = "- s";//終了時に確定
+    hOut.textContent = "0.00 m";
+    rOut.textContent = "0.00 m";
+
+
+
     drawFrame(0, Number(h0El.value), Number(gEl.value), false);
   });
 
