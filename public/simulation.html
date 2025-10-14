@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simulation - Virtual Physics Lab</title>
+  <link rel="stylesheet" href="styles/base.css" />
+</head>
+<body>
+  <header class="site-header container">
+    <nav class="nav">
+      <a class="brand" href="index.html">Virtual Physics Lab</a>
+      <div class="nav-links">
+        <a class="active" href="simulation.html">Simulation</a>
+        <a href="quiz.html">Quiz</a>
+        <a href="about.html">About</a>
+      </div>
+      <div class="actions">
+        <button id="loginBtn" class="btn">Sign In</button>
+        <button id="logoutBtn" class="btn danger" style="display:none;">Sign Out</button>
+        <span id="userInfo" class="muted"></span>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container grid-sim">
+    <section class="card controls" aria-labelledby="controls-title">
+      <h2 id="controls-title">Parameters</h2>
+
+      <div class="field">
+        <label for="simType">Simulation Type</label>
+        <select id="simType">
+          <option value="parabolic">Projectile (Parabolic) Motion</option>
+        </select>
+      </div>
+
+      <div id="controls-slot"><!-- per-type controls --></div>
+
+      <div class="actions">
+        <button id="startBtn" class="btn primary">Start</button>
+        <button id="pauseBtn" class="btn">Pause</button>
+        <button id="resetBtn" class="btn danger">Reset</button>
+      </div>
+    </section>
+
+    <section class="card canvas-wrap" aria-labelledby="canvas-title">
+      <h2 id="canvas-title" class="visually-hidden">Canvas</h2>
+      <canvas id="simCanvas"></canvas>
+    </section>
+
+    <section class="card metrics" aria-labelledby="metrics-title">
+      <h2 id="metrics-title">Readouts</h2>
+      <ul class="metrics-list" aria-live="polite">
+        <li><span>Time t</span><strong id="timeOut">0.00 s</strong></li>
+        <li><span>Value 1</span><strong id="m1Out">—</strong></li>
+        <li><span>Value 2</span><strong id="m2Out">—</strong></li>
+        <li><span>Value 3</span><strong id="m3Out">—</strong></li>
+      </ul>
+      <p class="hint">Displayed items vary by simulation type.</p>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <small>© Virtual Physics Lab</small>
+  </footer>
+
+  <!-- Firebase（compat） + Auth + Cloud呼び出し（順序が重要：この2つは先に読む） -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/cloud.js"></script>
+
+  <!-- sim.js は ES Module（動的 import） -->
+  <script type="module" src="scripts/sim.js"></script>
+</body>
+</html>

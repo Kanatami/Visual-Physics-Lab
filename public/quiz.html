@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz - Virtual Physics Lab</title>
+  <link rel="stylesheet" href="styles/base.css" />
+</head>
+<body>
+  <header class="site-header container">
+    <nav class="nav">
+      <a class="brand" href="index.html">Virtual Physics Lab</a>
+      <div class="nav-links">
+        <a href="simulation.html">Simulation</a>
+        <a class="active" href="quiz.html">Quiz</a>
+        <a href="about.html">About</a>
+      </div>
+      <div class="actions">
+        <button id="loginBtn" class="btn">Sign In</button>
+        <button id="logoutBtn" class="btn danger" style="display:none;">Sign Out</button>
+        <span id="userInfo" class="muted"></span>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h1>Projectile Motion Quiz</h1>
+      <p class="muted">Add and edit questions in <code>scripts/quiz.js</code>.</p>
+      <form id="quizForm" class="quiz-form"></form>
+      <div class="actions">
+        <button id="submitQuiz" class="btn primary" type="button">Grade</button>
+        <button id="resetQuiz" class="btn danger" type="button">Reset</button>
+      </div>
+      <div id="quizResult" class="result"></div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <small>© Virtual Physics Lab</small>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/quiz.js" defer></script>
+</body>
+</html>

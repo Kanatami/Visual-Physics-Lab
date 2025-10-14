@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auth - Virtual Physics Lab</title>
+  <link rel="stylesheet" href="styles/base.css" />
+</head>
+<body>
+  <header class="site-header container">
+    <nav class="nav">
+      <a class="brand" href="index.html">Virtual Physics Lab</a>
+      <div class="nav-links">
+        <a href="simulation.html">Simulation</a>
+        <a href="quiz.html">Quiz</a>
+        <a href="about.html">About</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card" style="max-width:520px;margin:auto">
+      <h1>Sign up / Login</h1>
+      <form id="authForm" class="controls">
+        <div class="field">
+          <label>Email</label>
+          <input name="email" type="email" required />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input name="password" type="password" required />
+        </div>
+        <div class="actions">
+          <button class="btn primary" type="submit" data-mode="signup">Sign up</button>
+          <button class="btn" type="submit" data-mode="login">Login</button>
+        </div>
+      </form>
+      <p class="muted" id="msg"></p>
+    </section>
+  </main>
+
+  <script type="module">
+    import { api } from "./scripts/apiClient.js";
+    const form = document.getElementById("authForm");
+    const msg = document.getElementById("msg");
+    let mode = "signup";
+    form.addEventListener("click", (e) => {
+      if (e.target.matches("button[data-mode]")) mode = e.target.dataset.mode;
+    });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = form.email.value.trim();
+      const password = form.password.value;
+      try {
+        const res = mode === "signup" ? await api.signup({ email, password }) : await api.login({ email, password });
+        api.setToken(res.token);
+        msg.textContent = "Success. Redirecting to dashboard...";
+        location.href = "dashboard.html";
+      } catch (err) {
+        msg.textContent = "Failed: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

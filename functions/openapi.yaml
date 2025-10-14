@@ -1,0 +1,111 @@
+openapi: 3.1.0
+info:
+  title: Virtual Physics Lab API
+  version: 1.0.0
+  description: REST API for saving simulation runs and quiz results.
+servers:
+  - url: https://asia-southeast2-{PROJECT_ID}.cloudfunctions.net/api
+    description: Firebase Functions base URL
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  # Firebase ID token
+  schemas:
+    Run:
+      type: object
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        v0: { type: number }
+        theta: { type: number }
+        h0: { type: number }
+        g: { type: number }
+        flightTime: { type: number }
+        range: { type: number }
+        hMax: { type: number }
+        createdAt: { type: string, format: date-time }
+      required: [id, userId, v0, theta, h0, g, flightTime, range, hMax, createdAt]
+    NewRun:
+      type: object
+      properties:
+        v0: { type: number }
+        theta: { type: number }
+        h0: { type: number }
+        g: { type: number }
+        flightTime: { type: number }
+        range: { type: number }
+        hMax: { type: number }
+      required: [v0, theta, h0, g, flightTime, range, hMax]
+    QuizResult:
+      type: object
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        score: { type: integer }
+        total: { type: integer }
+        createdAt: { type: string, format: date-time }
+      required: [id, userId, score, total, createdAt]
+paths:
+  /runs:
+    get:
+      summary: List my simulation runs
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Run" } }
+    post:
+      summary: Create a new simulation run
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewRun" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Run" }
+  /runs/{id}:
+    get:
+      summary: Get a run by id (owner only)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Run" }
+        "403": { description: Forbidden }
+        "404": { description: Not Found }
+  /quiz-results:
+    post:
+      summary: Save quiz result
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                score: { type: integer }
+                total: { type: integer }
+              required: [score, total]
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/QuizResult" }

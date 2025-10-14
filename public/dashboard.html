@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard - Virtual Physics Lab</title>
+  <link rel="stylesheet" href="styles/base.css" />
+</head>
+<body>
+  <header class="site-header container">
+    <nav class="nav">
+      <a class="brand" href="index.html">Virtual Physics Lab</a>
+      <div class="nav-links">
+        <a href="simulation.html">Simulation</a>
+        <a href="quiz.html">Quiz</a>
+        <a href="about.html">About</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container grid-2">
+    <section class="card">
+      <h2>My Progress</h2>
+      <pre id="progress">Loading...</pre>
+      <div class="actions">
+        <button id="inc" class="btn">+1 Completed</button>
+        <button id="logout" class="btn danger">Logout</button>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Recent Runs</h2>
+      <pre id="runs">Loading...</pre>
+    </section>
+  </main>
+
+  <script type="module">
+    import { api } from "./scripts/apiClient.js";
+    const progressEl = document.getElementById("progress");
+    const runsEl = document.getElementById("runs");
+    const incBtn = document.getElementById("inc");
+    const logoutBtn = document.getElementById("logout");
+
+    async function load(){
+      try {
+        const p = await api.getProgress();
+        progressEl.textContent = JSON.stringify(p, null, 2);
+        const r = await api.getRuns();
+        runsEl.textContent = JSON.stringify(r.slice(-10), null, 2);
+      } catch (e) {
+        progressEl.textContent = "Unauthorized. Go to auth page.";
+      }
+    }
+    incBtn.addEventListener("click", async () => {
+      const cur = await api.getProgress();
+      const upd = await api.updateProgress({ completedSimulations: (cur.completedSimulations||0) + 1 });
+      progressEl.textContent = JSON.stringify(upd, null, 2);
+    });
+    logoutBtn.addEventListener("click", () => { api.clearToken(); location.href = "auth.html"; });
+
+    load();
+  </script>
+</body>
+</html>

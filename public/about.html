@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About - Virtual Physics Lab</title>
+  <link rel="stylesheet" href="styles/base.css" />
+</head>
+<body>
+  <header class="site-header container">
+    <nav class="nav">
+      <a class="brand" href="index.html">Virtual Physics Lab</a>
+      <div class="nav-links">
+        <a href="simulation.html">Simulation</a>
+        <a href="quiz.html">Quiz</a>
+        <a class="active" href="about.html">About</a>
+      </div>
+      <div class="actions">
+        <button id="loginBtn" class="btn">Sign In</button>
+        <button id="logoutBtn" class="btn danger" style="display:none;">Sign Out</button>
+        <span id="userInfo" class="muted"></span>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container grid-2">
+    <section class="card">
+      <h1>Learning Objectives</h1>
+      <ul>
+        <li>Understand projectile motion parameters: v₀, θ, h₀, g.</li>
+        <li>Experience numerical simulation and visualization in the browser.</li>
+        <li>Use the quiz to check your understanding.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>How to Use</h2>
+      <ol>
+        <li>Open <strong>Simulation</strong> and set parameters.</li>
+        <li>Run, observe, and then review the readouts.</li>
+        <li>Try the <strong>Quiz</strong> to reinforce the concepts.</li>
+      </ol>
+      <details>
+        <summary>Equations (Projectile)</summary>
+        <p>x(t)=v₀cosθ·t, y(t)=h₀+v₀sinθ·t−(1/2)g t²</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <small>© Virtual Physics Lab</small>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/main.js" defer></script>
+</body>
+</html>
