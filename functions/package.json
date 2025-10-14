@@ -1,13 +1,15 @@
 {
   "name": "virtual-physics-lab-api",
-  "engines": { "node": "20" },
+  "engines": {
+    "node": "20"
+  },
   "main": "index.js",
   "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "firebase-admin": "^12.6.0",
-    "firebase-functions": "^5.1.1",
+    "firebase-admin": "^13.5.0",
+    "firebase-functions": "^6.5.0",
     "swagger-ui-express": "^5.0.1",
     "yaml": "^2.5.0"
   }

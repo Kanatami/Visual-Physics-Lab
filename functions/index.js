@@ -1,117 +1,127 @@
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
+// functions/index.js  (Firebase Functions v2 版)
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const YAML = require("yaml");
+
+// Admin SDK (v11+)
+const { initializeApp } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+
+// Functions v2
+const { onRequest } = require("firebase-functions/v2/https");
 const swaggerUi = require("swagger-ui-express");
 
-// Firebase Admin 初期化
-admin.initializeApp();
+initializeApp();
+const db = getFirestore();
 
 const app = express();
-
-// CORS（必要に応じて origin を絞る）
+// CORS は v2 の onRequest でも有効化できるが、Express 側でも許可しておく
 app.use(cors({ origin: true }));
 app.use(express.json());
 
-// ==== 認証ガード（Firebase ID トークンを検証） ====
+// ---- Auth Guard ----
 async function authGuard(req, res, next) {
   const h = req.headers.authorization || "";
   const m = h.match(/^Bearer (.+)$/);
   if (!m) return res.status(401).json({ error: "Missing token" });
   try {
-    req.user = await admin.auth().verifyIdToken(m[1]);
+    req.user = await getAuth().verifyIdToken(m[1]);
     return next();
-  } catch (e) {
+  } catch {
     return res.status(401).json({ error: "Invalid token" });
   }
 }
 
-// ==== Firestore 参照 ====
-const db = admin.firestore();
-const runsCol = () => db.collection("runs");
-const quizCol = () => db.collection("quizResults");
+// ---- Router (ベース /api) ----
+const router = express.Router();
 
-// ==== /api/runs ====
-
-// GET /runs: 自分の実行履歴（最新50件）
-app.get("/runs", authGuard, async (req, res) => {
+router.get("/runs", authGuard, async (req, res) => {
   const uid = req.user.uid;
-  const snap = await runsCol()
+  const snap = await db
+    .collection("runs")
     .where("userId", "==", uid)
     .orderBy("createdAt", "desc")
     .limit(50)
     .get();
 
-  const items = snap.docs.map(d => ({
-    id: d.id,
-    ...d.data(),
-    createdAt: d.data().createdAt?.toDate?.()?.toISOString() || null
-  }));
+  const items = snap.docs.map(d => {
+    const data = d.data();
+    return {
+      id: d.id,
+      ...data,
+      createdAt: data.createdAt && data.createdAt.toDate
+        ? data.createdAt.toDate().toISOString()
+        : null
+    };
+  });
   res.json(items);
 });
 
-// POST /runs: 実行結果を保存
-app.post("/runs", authGuard, async (req, res) => {
-  const uid = req.user.uid;
+router.post("/runs", authGuard, async (req, res) => {
   const { v0, theta, h0, g, flightTime, range, hMax } = req.body || {};
-  // 簡易バリデーション（※必要に応じて厳密化）
   for (const k of ["v0", "theta", "h0", "g", "flightTime", "range", "hMax"]) {
     if (typeof req.body[k] !== "number") {
       return res.status(400).json({ error: `Invalid field: ${k}` });
     }
   }
-  const data = {
-    userId: uid,
+  const docRef = await db.collection("runs").add({
+    userId: req.user.uid,
     v0, theta, h0, g, flightTime, range, hMax,
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  };
-  const docRef = await runsCol().add(data);
-  const doc = await docRef.get();
-  const saved = { id: doc.id, ...doc.data() };
-  saved.createdAt = saved.createdAt?.toDate?.()?.toISOString() || null;
-  res.status(201).json(saved);
+    createdAt: FieldValue.serverTimestamp()
+  });
+  const snap = await docRef.get();
+  const data = snap.data();
+  res.status(201).json({
+    id: snap.id,
+    ...data,
+    createdAt: data.createdAt?.toDate?.()?.toISOString() || null
+  });
 });
 
-// GET /runs/:id: 単一取得（本人のみ）
-app.get("/runs/:id", authGuard, async (req, res) => {
-  const uid = req.user.uid;
-  const doc = await runsCol().doc(req.params.id).get();
-  if (!doc.exists) return res.status(404).json({ error: "Not Found" });
-  const data = doc.data();
-  if (data.userId !== uid) return res.status(403).json({ error: "Forbidden" });
-  data.createdAt = data.createdAt?.toDate?.()?.toISOString() || null;
-  res.json({ id: doc.id, ...data });
+router.get("/runs/:id", authGuard, async (req, res) => {
+  const snap = await db.collection("runs").doc(req.params.id).get();
+  if (!snap.exists) return res.status(404).json({ error: "Not Found" });
+  const data = snap.data();
+  if (data.userId !== req.user.uid) return res.status(403).json({ error: "Forbidden" });
+  res.json({
+    id: snap.id,
+    ...data,
+    createdAt: data.createdAt?.toDate?.()?.toISOString() || null
+  });
 });
 
-// ==== /api/quiz-results ====
-
-// POST /quiz-results: クイズ結果を保存
-app.post("/quiz-results", authGuard, async (req, res) => {
-  const uid = req.user.uid;
+router.post("/quiz-results", authGuard, async (req, res) => {
   const { score, total } = req.body || {};
   if (!Number.isInteger(score) || !Number.isInteger(total)) {
     return res.status(400).json({ error: "score/total must be integers" });
   }
-  const data = {
-    userId: uid,
-    score, total,
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  };
-  const docRef = await quizCol().add(data);
-  const doc = await docRef.get();
-  const saved = { id: doc.id, ...doc.data() };
-  saved.createdAt = saved.createdAt?.toDate?.()?.toISOString() || null;
-  res.status(201).json(saved);
+  const docRef = await db.collection("quizResults").add({
+    userId: req.user.uid,
+    score,
+    total,
+    createdAt: FieldValue.serverTimestamp()
+  });
+  const snap = await docRef.get();
+  const data = snap.data();
+  res.status(201).json({
+    id: snap.id,
+    ...data,
+    createdAt: data.createdAt?.toDate?.()?.toISOString() || null
+  });
 });
 
-// ==== OpenAPI ドキュメント（/api/docs） ====
-// functions/openapi.yaml を読み込んで Swagger UI に渡す
-const specPath = path.join(__dirname, "openapi.yaml");
-const spec = YAML.parse(fs.readFileSync(specPath, "utf8"));
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(spec));
+// OpenAPI (/api/docs)
+const spec = YAML.parse(fs.readFileSync(path.join(__dirname, "openapi.yaml"), "utf8"));
+router.use("/docs", swaggerUi.serve, swaggerUi.setup(spec));
 
-// Cloud Functions として公開（リージョンは必要に応じて変更）
-exports.api = functions.region("asia-southeast2").https.onRequest(app);
+// /api にマウント
+app.use("/api", router);
+
+// v2 では onRequest を使う（地域は emulator のデフォルトに合わせて us-central1 推奨）
+exports.api = onRequest(
+  { region: "us-central1", cors: true },  // ← まずはエミュと揃える。後で asia-southeast2 に変更可
+  app
+);
