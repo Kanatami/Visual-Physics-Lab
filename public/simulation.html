@@ -23,54 +23,41 @@
     </nav>
   </header>
 
-  <main class="container grid-sim">
-    <section class="card controls" aria-labelledby="controls-title">
-      <h2 id="controls-title">Parameters</h2>
-
-      <div class="field">
-        <label for="simType">Simulation Type</label>
-        <select id="simType">
-          <option value="parabolic">Projectile (Parabolic) Motion</option>
-        </select>
-      </div>
-
-      <div id="controls-slot"><!-- per-type controls --></div>
-
-      <div class="actions">
-        <button id="startBtn" class="btn primary">Start</button>
-        <button id="pauseBtn" class="btn">Pause</button>
-        <button id="resetBtn" class="btn danger">Reset</button>
-      </div>
-    </section>
-
-    <section class="card canvas-wrap" aria-labelledby="canvas-title">
-      <h2 id="canvas-title" class="visually-hidden">Canvas</h2>
-      <canvas id="simCanvas"></canvas>
-    </section>
-
-    <section class="card metrics" aria-labelledby="metrics-title">
-      <h2 id="metrics-title">Readouts</h2>
-      <ul class="metrics-list" aria-live="polite">
-        <li><span>Time t</span><strong id="timeOut">0.00 s</strong></li>
-        <li><span>Value 1</span><strong id="m1Out">—</strong></li>
-        <li><span>Value 2</span><strong id="m2Out">—</strong></li>
-        <li><span>Value 3</span><strong id="m3Out">—</strong></li>
-      </ul>
-      <p class="hint">Displayed items vary by simulation type.</p>
-    </section>
+  <!-- ▼ 旧の固定UIを撤去し、マウント用コンテナだけに -->
+  <main class="container">
+    <div id="sim-root"></div>
   </main>
 
   <footer class="container footer">
     <small>© Virtual Physics Lab</small>
   </footer>
 
-  <!-- Firebase（compat） + Auth + Cloud呼び出し（順序が重要：この2つは先に読む） -->
+  <!-- Firebase（compat） + Auth + Cloud（順序重要） -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="scripts/auth.js"></script>
   <script src="scripts/cloud.js"></script>
 
-  <!-- sim.js は ES Module（動的 import） -->
-  <script type="module" src="scripts/sim.js"></script>
+  <!-- ▼ レジストリ初期化 -->
+  <script>
+    // グローバル・レジストリ（初回だけ）
+    window.SimRegistry = window.SimRegistry || {};
+    window.registerSimulation = (def) => { window.SimRegistry[def.key] = def; };
+  </script>
+
+  <!-- ▼ 各シミュ（通常スクリプトとして1回ずつ） -->
+  <script src="scripts/sim/parabolic.js" defer></script>
+  <script src="scripts/sim/circular_motion.js" defer></script>
+
+  <!-- ▼ ルーター：?sim=キー（無指定は projectile） -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const key = new URLSearchParams(location.search).get('sim') || 'projectile';
+      const def = window.SimRegistry[key] || window.SimRegistry['projectile'];
+      const mount = document.getElementById('sim-root');
+      const api = def.init(mount);
+      // 必要なら api.reset() など
+    });
+  </script>
 </body>
 </html>

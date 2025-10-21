@@ -1,16 +1,20 @@
 {
-  "functions": {
-    "source": "functions"    
-  },
+  "functions": { "source": "functions" },
+
   "hosting": {
     "public": "public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [{ "source": "/api/**", "function": "api" }]
   },
+
+  "firestore": {
+    "rules": "firestore.rules" 
+  },
+
   "emulators": {
     "functions": { "port": 5001 },
-    "firestore": { "host": "127.0.0.1", "port": 8090, "rules": "firestore.rules" },
-    "hosting": { "port": 5002 },
-    "ui": { "enabled": true, "port": 4000 }
+    "firestore": { "host": "127.0.0.1", "port": 8090 },
+    "hosting":   { "port": 5002 },
+    "ui":        { "enabled": true, "port": 4000 }
   }
 }
